@@ -40,8 +40,8 @@ describe Audited::Auditor, :adapter => :active_record do
     it "should access column names one time" do
       model = Class.new(Models::ActiveRecord::BlankUser)
       model.audited :only => [:name]
-      model.should_receive(:column_names).once
-        .and_return(Models::ActiveRecord::BlankUser.column_names)
+      model.should_receive(:column_names).once.
+        and_return(Models::ActiveRecord::BlankUser.column_names)
       2.times { model.non_audited_columns }
       Audited::Adapters::ActiveRecord::Audit.audited_class_names.delete(model.to_s)
     end
