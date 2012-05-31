@@ -27,6 +27,11 @@ module Models
       audited :comment_required => true, :on => [:update]
     end
 
+    class CommentRequiredOnUpdateExceptNameUser < ::ActiveRecord::Base
+      self.table_name = :users
+      audited :comment_required => true, :on => [:update], :except => [:name]
+    end
+
     class CommentRequiredOnUpdateDestroyUser < ::ActiveRecord::Base
       self.table_name = :users
       audited :comment_required => true, :on => [:destroy, :update]

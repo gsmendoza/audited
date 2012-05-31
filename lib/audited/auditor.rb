@@ -59,10 +59,10 @@ module Audited
         if options[:comment_required]
           actions = (options[:on] || []) - [:destroy]
           if actions.empty?
-            validates_presence_of :audit_comment, :if => :auditing_enabled
+            validates_presence_of :audit_comment, :if => :audit_comment_required?
           else
             actions.each do |action|
-              validates_presence_of :audit_comment, :if => :auditing_enabled, :on => action
+              validates_presence_of :audit_comment, :if => :audit_comment_required?, :on => action
             end
           end
 
@@ -234,6 +234,10 @@ module Audited
         attrs[:associated] = self.send(audit_associated_with) unless audit_associated_with.nil?
         self.audit_comment = nil
         run_callbacks(:audit)  { self.audits.create(attrs) } if auditing_enabled
+      end
+
+      def audit_comment_required?
+        auditing_enabled && ! (self.changed & self.class.audited_columns.map(&:name)).empty?
       end
 
       def require_comment

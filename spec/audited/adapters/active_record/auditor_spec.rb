@@ -419,8 +419,12 @@ describe Audited::Auditor, :adapter => :active_record do
   describe "comment required" do
 
     describe "on create" do
-      it "should not validate when audit_comment is not supplied" do
-        Models::ActiveRecord::CommentRequiredUser.new.should_not be_valid
+      it "should not validate when audit_comment is not supplied on a change" do
+        user = Models::ActiveRecord::CommentRequiredUser.new
+        user.should be_valid
+
+        user.name = 'Brandon'
+        user.should_not be_valid
       end
 
       it "should validate when audit_comment is supplied" do
@@ -460,6 +464,14 @@ describe Audited::Auditor, :adapter => :active_record do
         user = Models::ActiveRecord::CommentRequiredOnUpdateDestroyUser.create!
         user.update_attributes(:name => 'Test').should be_false
         user.errors[:audit_comment].should_not be_empty
+      end
+
+      it "should not require comment if the attributes changed are excepted from auditing" do
+        user = Models::ActiveRecord::CommentRequiredOnUpdateExceptNameUser.create!.should be_true
+
+        user.name = 'Bert'
+        user.audit_comment = nil
+        user.should be_valid
       end
     end
 
