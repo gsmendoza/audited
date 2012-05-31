@@ -432,6 +432,11 @@ describe Audited::Auditor, :adapter => :active_record do
         Models::ActiveRecord::CommentRequiredUser.new.should be_valid
         Models::ActiveRecord::CommentRequiredUser.enable_auditing
       end
+
+      it "should not validate if specified only on update/destroy" do
+        user = Models::ActiveRecord::CommentRequiredOnUpdateDestroyUser.new( :audit_comment => nil)
+        user.should be_valid
+      end
     end
 
     describe "on update" do
@@ -449,6 +454,12 @@ describe Audited::Auditor, :adapter => :active_record do
         Models::ActiveRecord::CommentRequiredUser.disable_auditing
         user.update_attributes(:name => 'Test').should be_true
         Models::ActiveRecord::CommentRequiredUser.enable_auditing
+      end
+
+      it "should validate if specified on update" do
+        user = Models::ActiveRecord::CommentRequiredOnUpdateDestroyUser.create!
+        user.update_attributes(:name => 'Test').should be_false
+        user.errors[:audit_comment].should_not be_empty
       end
     end
 
@@ -469,8 +480,18 @@ describe Audited::Auditor, :adapter => :active_record do
         user.destroy.should == user
         Models::ActiveRecord::CommentRequiredUser.enable_auditing
       end
-    end
 
+      it "should validate when specified to audit on destroy" do
+        user = Models::ActiveRecord::CommentRequiredOnUpdateDestroyUser.create!
+        user.destroy.should be_false
+        user.errors[:audit_comment].should_not be_empty
+      end
+
+      it "should not validate when not specified to audit on destroy" do
+        user = Models::ActiveRecord::CommentRequiredOnUpdateUser.create!
+        user.destroy.should be_true
+      end
+    end
   end
 
   describe "attr_protected and attr_accessible" do
@@ -523,5 +544,4 @@ describe Audited::Auditor, :adapter => :active_record do
       user.bogus_attr.should == "do something"
     end
   end
-
 end
